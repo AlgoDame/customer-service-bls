@@ -11,13 +11,14 @@ export class AccountService extends BaseService {
 
             if (failedValidation) return this.sendError(req, res, 400, failedValidation);
 
-            let customer = await FundAccountHandler.validateAccount(req);
+            let customerRecord = await FundAccountHandler.validateAccount(req);
 
-            if (!customer.length){
+            if (!customerRecord.length){
                 return this.sendError(req, res, 404, this.ACCOUNT_EXIST_MSG)
             } 
 
-            let billingResponse = await FundAccountHandler.sendFundDetailToBilling(req);
+            let customer = customerRecord[0];
+            let billingResponse = await FundAccountHandler.sendFundDetailToBilling(req, customer);
 
             return this.sendResponse(req, res, 200, billingResponse);
 

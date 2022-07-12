@@ -2,6 +2,7 @@ import { Request } from "express";
 import { accountFundSchema } from "../../validation/accountFundPayloadSchema";
 import { dbConnection } from "../../db/dbConnection";
 import { BillingServiceAxiosInstance } from "../../utils/billingAxiosInstance";
+import { ICustomer } from "../../interface/icustomer";
 
 
 
@@ -19,22 +20,24 @@ export class FundAccountHandler {
         let accountId = req.body.account_id;
         let connection = await dbConnection();
         let sql = `SELECT * FROM customers WHERE account_id = ?`;
-        const [rows] = await connection.query<any[]>(sql, [accountId]);
-        return rows;
+        const [customerRecord] = await connection.query<any[]>(sql, [accountId]);
+        return customerRecord;
     }
 
-    public static async sendFundDetailToBilling(req: Request) {
+    public static async sendFundDetailToBilling(req: Request, customerRecord: ICustomer) {
         let requestBody = {
             account_id: req.body.account_id,
-            amount: req.body.amount
+            amount: req.body.amount,
+            customer_id: customerRecord.customer_id
         }
+
         let axiosInstance = BillingServiceAxiosInstance.getAxiosInstance(req.headers.authorization || "");
         const response = await axiosInstance.post("/transactions", requestBody);
-        console.log("funding response ", response);
+        console.log("billing funding response::: ", response.data);
         return response.data;
     }
 
 
-    
+
 
 }
