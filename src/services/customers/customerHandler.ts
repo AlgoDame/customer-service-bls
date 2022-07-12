@@ -1,6 +1,7 @@
 import { Request } from "express";
 import { customerSchema } from "../../validation/customerPayloadSchema";
 import { dbConnection } from "../../db/dbConnection";
+import bcrypt from "bcrypt";
 import ShortUniqueId from "short-unique-id";
 
 
@@ -19,19 +20,22 @@ export class CustomerRegistrationHandler {
         let {
             first_name,
             last_name,
-            email
+            email,
+            password
         } = req.body;
+
+        const passwordHash = await this.hashPassword(password);
 
         const uid = new ShortUniqueId({ length: 10 });
         let account_id = uid();
 
-        let createCustomerQuery = `INSERT INTO customers (first_name, last_name, email, account_id)
-        VALUES (?, ?, ?, ?)`;
+        let createCustomerQuery = `INSERT INTO customers (first_name, last_name, email, password, account_id)
+        VALUES (?, ?, ?, ?, ?)`;
 
         let connection = await dbConnection();
-        await connection.query(createCustomerQuery, [first_name, last_name, email, account_id]);
+        await connection.query(createCustomerQuery, [first_name, last_name, email, passwordHash, account_id]);
         
-        let selectCustomerQuery = `SELECT * FROM customers WHERE email = ?`;
+        let selectCustomerQuery = `SELECT first_name, last_name, email, customer_id, account_id FROM customers WHERE email = ?`;
         let [customerResult] = await connection.query<any[]>(selectCustomerQuery, [email]);
 
         if(!customerResult.length){
@@ -50,6 +54,11 @@ export class CustomerRegistrationHandler {
         let sql = `SELECT * FROM customers WHERE email = ?`;
         const [rows] = await connection.query<any[]>(sql, [email]);
         return rows;
+    }
+
+    private static async hashPassword(password: string) {
+        const hashed = await bcrypt.hash(password, 10);
+        return hashed;
     }
 
     private static async createCustomerAccount(account_id:string, customer_id:number){
