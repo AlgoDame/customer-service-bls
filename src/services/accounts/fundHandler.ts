@@ -37,6 +37,25 @@ export class FundAccountHandler {
         return response.data;
     }
 
+    public static async completeFundingRequest(req: Request) {
+
+        const { customer_id, account_id, amount } = req.body;
+        let connection = await dbConnection();
+        let findAccountQuery = `SELECT * FROM accounts WHERE customer_id = ? AND account_id = ?`;
+        const [accountRecord] = await connection.query<any[]>(findAccountQuery, [customer_id, account_id]);
+
+        if (!accountRecord.length) {
+            console.log("Received invalid account id or invalid customer id")
+            return null;
+        }
+
+        let account = accountRecord[0];
+
+        let accountBalance = (parseFloat(account.amount) + parseFloat(amount)).toString();
+        let updateBalanceQuery = `UPDATE accounts SET amount = ? WHERE account_id = ?`;
+        let updatedAccountResult =  await connection.query<any[]>(updateBalanceQuery, [accountBalance, account_id]);
+        return updatedAccountResult[0];
+    }
 
 
 

@@ -18,6 +18,7 @@ export class BaseController {
         this.registerCustomer(prefix, router);
         this.initLoginCustomer(prefix, router);
         this.fundAccount(prefix, router);
+        this.completeFundAccount(prefix, router);
 
 
     }
@@ -39,6 +40,13 @@ export class BaseController {
             new AccountService().fundAccount(req, res);
         });
     }
+
+    private completeFundAccount(prefix: string, router: Router): any {
+        router.post(prefix + "/webhook", async (req: Request, res: Response) => {
+            new AccountService().completeFundRequest(req, res);
+        });
+    }
+
 
 
 

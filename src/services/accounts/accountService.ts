@@ -28,5 +28,19 @@ export class AccountService extends BaseService {
         }
     }
 
+    public async completeFundRequest(req: Request, res: Response) {
+        try {
+            let account = await FundAccountHandler.completeFundingRequest(req);
+            return this.sendResponse(req, res, 200, true);
+
+
+
+        } catch (error:any) {
+            console.error(`Error occurred in accountService::: ${error}`);
+            return this.sendError(req, res, 500, error.message);
+        }
+    }
+
+
 
 }
