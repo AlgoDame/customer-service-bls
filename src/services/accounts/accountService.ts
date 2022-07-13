@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { BaseService } from "../baseService";
 import { FundAccountHandler } from "./fundHandler";
+import { GetAccountHandler } from "./getAccountHandler";
 
 export class AccountService extends BaseService {
     private ACCOUNT_EXIST_MSG: string = "Account does not exist";
@@ -13,16 +14,16 @@ export class AccountService extends BaseService {
 
             let customerRecord = await FundAccountHandler.validateAccount(req);
 
-            if (!customerRecord.length){
+            if (!customerRecord.length) {
                 return this.sendError(req, res, 404, this.ACCOUNT_EXIST_MSG)
-            } 
+            }
 
             let customer = customerRecord[0];
             let billingResponse = await FundAccountHandler.sendFundDetailToBilling(req, customer);
 
             return this.sendResponse(req, res, 200, billingResponse);
 
-        } catch (error:any) {
+        } catch (error: any) {
             console.error(`Error occurred in accountService::: ${error}`);
             return this.sendError(req, res, 500, error.message);
         }
@@ -35,8 +36,21 @@ export class AccountService extends BaseService {
 
 
 
-        } catch (error:any) {
+        } catch (error: any) {
             console.error(`Error occurred in accountService::: ${error}`);
+            return this.sendError(req, res, 500, error.message);
+        }
+    }
+
+    public async getUserAccount(req: Request, res: Response) {
+        try {
+            let account = await GetAccountHandler.fetchAccount(req);
+            return this.sendResponse(req, res, 200, account);
+
+        } catch (error: any) {
+            if (error.status) {
+                return this.sendError(req, res, error.status, error.message);
+            }
             return this.sendError(req, res, 500, error.message);
         }
     }
