@@ -17,14 +17,19 @@ app.use(morgan("dev"));
 
 app.use("/v1/api",
     apiRouter
-   
+
 );
 
-dbConnection().then(connection => console.log("::: 🚀Connected to Database :::"));
+console.log("Waiting to connect...");
+setTimeout(() => {
+    console.log("Connecting to db...")
+    dbConnection().then(connection => console.log("::: 🚀Connected to Database :::")).catch(error => console.log("Customer service startup error ", error));
+    app.listen(PORT, () =>
+        console.log(`🚀 REST API server ready at ⭐️: http://localhost:${PORT}`)
+    );
+
+    initSchemas();
+}, 40 * 1000);
 
 
-app.listen(PORT, () =>
-    console.log(`🚀 REST API server ready at ⭐️: http://localhost:${PORT}`)
-);
 
-initSchemas();
